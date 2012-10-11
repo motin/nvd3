@@ -3041,9 +3041,9 @@ nv.models.legend = function() {
   // Public Variables with Default Settings
   //------------------------------------------------------------
 
-  var margin = {top: 5, right: 0, bottom: 5, left: 0}
+  var margin = {top: 10+5, right: 0, bottom: 10+5, left: 0}
     , width = 400
-    , height = 20
+    , height = 50+20
     , getKey = function(d) { return d.key }
     , color = nv.utils.defaultColor()
     , align = true
