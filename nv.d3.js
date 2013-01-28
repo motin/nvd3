@@ -5666,6 +5666,7 @@ nv.models.multiBarChart = function() {
     ;
 
   multibar
+    .delay(0)
     .stacked(false)
     ;
   xAxis
@@ -5710,7 +5711,7 @@ nv.models.multiBarChart = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
-      chart.update = function() { selection.transition().call(chart) };
+      chart.update = function() { selection.transition().duration(0).call(chart) };
       chart.container = this;
 
 
