@@ -6088,6 +6088,8 @@ nv.models.multiBarHorizontal = function() {
     , getY = function(d) { return d.y }
     , forceY = [0] // 0 is forced by default.. this makes sense for the majority of bar graphs... user can always do chart.forceY([]) to remove
     , color = nv.utils.defaultColor()
+    , barcolor = nv.utils.defaultColor()
+	, baropacity = 1
     , stacked = false
     , showValues = false
     , valuePadding = 60
@@ -6213,6 +6215,12 @@ nv.models.multiBarHorizontal = function() {
       barsEnter.append('rect')
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
+		  .style('fill', function(d,i,j){ return barcolor(d, i, j) })
+          .style('stroke', function(d,i,j){ return barcolor(d, j, i) })
+
+      d3.transition(bars)
+          .style('stroke-opacity', function(d,i,j){ console.log('foo', d, i, j); return baropacity(d, i, j) })
+          .style('fill-opacity', function(d,i,j){ console.log('foo2', d, i, j); return baropacity(d, i, j) });
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
@@ -6403,6 +6411,18 @@ nv.models.multiBarHorizontal = function() {
   chart.color = function(_) {
     if (!arguments.length) return color;
     color = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.barcolor = function(_) {
+    if (!arguments.length) return barcolor;
+    barcolor = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.baropacity = function(_) {
+    if (!arguments.length) return baropacity;
+    baropacity = nv.utils.getColor(_);
     return chart;
   };
 
