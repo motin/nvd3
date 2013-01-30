@@ -6150,7 +6150,7 @@ nv.models.multiBarHorizontal = function() {
             });
 
       x   .domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
-          .rangeBands([0, availableHeight], .025); // .0 = no space between bars horizontally, 0.025 = just enough to fit stroke-width=2 around rect
+          .rangeBands([0, availableHeight], .0); // .0 = no space between bars horizontally, 0.025 = just enough to fit stroke-width=2 around rect
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y + (stacked ? d.y0 : 0) }).concat(forceY)))
 
@@ -6220,7 +6220,7 @@ nv.models.multiBarHorizontal = function() {
           .style('stroke', function(d,i,j){ console.log('stroke', d, i, j);return barcolor(d, i, j, 'stroke') })
           .style('fill-opacity', function(d,i,j){ console.log('fopacity', d, i, j); return baropacity(d, i, j, 'fill') })
           .style('stroke-opacity', function(d,i,j){ console.log('sopacity', d, i, j); return baropacity(d, i, j, 'stroke') })
-          .style('stroke-width', 2)
+          .style('stroke-width', 0)
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
