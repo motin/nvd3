@@ -6150,7 +6150,7 @@ nv.models.multiBarHorizontal = function() {
             });
 
       x   .domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
-          .rangeBands([0, availableHeight], .0); // .0 = no space between bars horizontally
+          .rangeBands([0, availableHeight], .025); // .0 = no space between bars horizontally, 0.025 = just enough to fit stroke-width=2 around rect
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y + (stacked ? d.y0 : 0) }).concat(forceY)))
 
@@ -6194,8 +6194,9 @@ nv.models.multiBarHorizontal = function() {
       groups
           .attr('class', function(d,i) { return 'nv-group nv-series-' + i })
           .classed('hover', function(d) { return d.hover })
-          .style('fill', function(d,i){ return color(d, i) })
-          .style('stroke', function(d,i){ return color(d, i) });
+//          .style('fill', function(d,i){ return color(d, i) })
+//          .style('stroke', function(d,i){ return color(d, i) })
+		  ;
       d3.transition(groups)
           .style('stroke-opacity', 1)
           .style('fill-opacity', .75);
@@ -6215,12 +6216,11 @@ nv.models.multiBarHorizontal = function() {
       barsEnter.append('rect')
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
-		  .style('fill', function(d,i,j){ return barcolor(d, i, j) })
-          .style('stroke', function(d,i,j){ return barcolor(d, j, i) })
-
-      d3.transition(bars)
-          .style('stroke-opacity', function(d,i,j){ console.log('foo', d, i, j); return baropacity(d, i, j) })
-          .style('fill-opacity', function(d,i,j){ console.log('foo2', d, i, j); return baropacity(d, i, j) });
+		  .style('fill', function(d,i,j){ console.log('fill', d, i, j);return barcolor(d, i, j, 'fill') })
+          .style('stroke', function(d,i,j){ console.log('stroke', d, i, j);return barcolor(d, i, j, 'stroke') })
+          .style('fill-opacity', function(d,i,j){ console.log('fopacity', d, i, j); return baropacity(d, i, j, 'fill') })
+          .style('stroke-opacity', function(d,i,j){ console.log('sopacity', d, i, j); return baropacity(d, i, j, 'stroke') })
+          .style('stroke-width', 2)
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
