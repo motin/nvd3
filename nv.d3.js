@@ -6081,6 +6081,7 @@ nv.models.multiBarHorizontal = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0}
     , width = 960
     , height = 500
+	, strokeWidth = 0
     , id = Math.floor(Math.random() * 10000) //Create semi-unique ID in case user doesn't select one
     , x = d3.scale.ordinal()
     , y = d3.scale.linear()
@@ -6215,14 +6216,13 @@ nv.models.multiBarHorizontal = function() {
 
       barsEnter.append('rect')
           .attr('width', 0)
-          .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
+          .attr('height', 0)
 
       var rects = bars.selectAll('rect')
 		  .style('fill', function(d,i,j){ return barcolor(d, i, j, 'fill') })
           .style('stroke', function(d,i,j){ return barcolor(d, i, j, 'stroke') })
           .style('fill-opacity', function(d,i,j){ return baropacity(d, i, j, 'fill') })
           .style('stroke-opacity', function(d,i,j){ return baropacity(d, i, j, 'stroke') })
-          .style('stroke-width', 0)
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
@@ -6298,13 +6298,18 @@ nv.models.multiBarHorizontal = function() {
             //.delay(function(d,i) { return i * delay / data[0].values.length })
             .attr('transform', function(d,i) {
               //return 'translate(' + y(d.y0) + ',0)'
-              return 'translate(' + y(d.y0) + ',' + x(getX(d,i)) + ')'
+              return 'translate(' + (y(d.y0)+Math.round(strokeWidth/2)) + ',' + (x(getX(d,i))+Math.round(strokeWidth/2)) + ')'
             })
           .select('rect')
             .attr('width', function(d,i) {
-              return Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : width - strokeWidth
             })
-            .attr('height', x.rangeBand() );
+            .style('stroke-width', function(d,i) {
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : strokeWidth
+            })
+            .attr('height', x.rangeBand() - strokeWidth );
       else
         d3.transition(bars)
           //.delay(function(d,i) { return i * delay / data[0].values.length })
@@ -6371,6 +6376,12 @@ nv.models.multiBarHorizontal = function() {
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    return chart;
+  };
+
+  chart.strokeWidth = function(_) {
+    if (!arguments.length) return strokeWidth;
+    strokeWidth = _;
     return chart;
   };
 
