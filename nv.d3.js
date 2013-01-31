@@ -6216,6 +6216,8 @@ nv.models.multiBarHorizontal = function() {
       barsEnter.append('rect')
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
+
+      var rects = bars.selectAll('rect')
 		  .style('fill', function(d,i,j){ return barcolor(d, i, j, 'fill') })
           .style('stroke', function(d,i,j){ return barcolor(d, i, j, 'stroke') })
           .style('fill-opacity', function(d,i,j){ return baropacity(d, i, j, 'fill') })
