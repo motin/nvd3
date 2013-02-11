@@ -5687,6 +5687,7 @@ nv.models.multiBarChart = function() {
     ;
 
   multibar
+    .delay(0) // Removes transitions (through duration = 0) between chart updates
     .stacked(false)
     ;
   xAxis
@@ -5731,7 +5732,7 @@ nv.models.multiBarChart = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
-      chart.update = function() { selection.transition().call(chart) };
+      chart.update = function() { selection.transition().duration(0).call(chart) }; // Removes transitions (through duration = 0) between chart updates
       chart.container = this;
 
 
@@ -6101,6 +6102,7 @@ nv.models.multiBarHorizontal = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0}
     , width = 960
     , height = 500
+	, strokeWidth = 0 // Added strokeWidth param for multibar horizontal
     , id = Math.floor(Math.random() * 10000) //Create semi-unique ID in case user doesn't select one
     , x = d3.scale.ordinal()
     , y = d3.scale.linear()
@@ -6108,6 +6110,8 @@ nv.models.multiBarHorizontal = function() {
     , getY = function(d) { return d.y }
     , forceY = [0] // 0 is forced by default.. this makes sense for the majority of bar graphs... user can always do chart.forceY([]) to remove
     , color = nv.utils.defaultColor()
+    , barcolor = nv.utils.defaultColor() // Added override possibilities to bar color and bar opacity for multibar
+	, baropacity = 1 // Added override possibilities to bar color and bar opacity for multibar
     , stacked = false
     , showValues = false
     , valuePadding = 60
@@ -6168,7 +6172,7 @@ nv.models.multiBarHorizontal = function() {
             });
 
       x   .domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
-          .rangeBands([0, availableHeight], .1);
+          .rangeBands([0, availableHeight], .0); // .0 = no percentually defined space between bars horizontally
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y + (stacked ? d.y0 : 0) }).concat(forceY)))
 
@@ -6212,11 +6216,12 @@ nv.models.multiBarHorizontal = function() {
       groups
           .attr('class', function(d,i) { return 'nv-group nv-series-' + i })
           .classed('hover', function(d) { return d.hover })
-          .style('fill', function(d,i){ return color(d, i) })
-          .style('stroke', function(d,i){ return color(d, i) });
-      d3.transition(groups)
-          .style('stroke-opacity', 1)
-          .style('fill-opacity', .75);
+		  // Fill and stroke are now determined on bar-level, not group-level
+		  //.style('fill', function(d,i){ return color(d, i) })
+		  //.style('stroke', function(d,i){ return color(d, i) })
+      //d3.transition(groups)
+          //.style('stroke-opacity', 1)
+          //.style('fill-opacity', .75);
 
 
       var bars = groups.selectAll('g.nv-bar')
@@ -6233,6 +6238,13 @@ nv.models.multiBarHorizontal = function() {
       barsEnter.append('rect')
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
+
+      // Fill and stroke are now determined on bar-level, not group-level
+      var rects = bars.selectAll('rect')
+		  .style('fill', function(d,i,j){ return barcolor(d, i, j, 'fill') })
+          .style('stroke', function(d,i,j){ return barcolor(d, i, j, 'stroke') })
+          .style('fill-opacity', function(d,i,j){ return baropacity(d, i, j, 'fill') })
+          .style('stroke-opacity', function(d,i,j){ return baropacity(d, i, j, 'stroke') })
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
@@ -6308,13 +6320,18 @@ nv.models.multiBarHorizontal = function() {
             //.delay(function(d,i) { return i * delay / data[0].values.length })
             .attr('transform', function(d,i) {
               //return 'translate(' + y(d.y0) + ',0)'
-              return 'translate(' + y(d.y0) + ',' + x(getX(d,i)) + ')'
+              return 'translate(' + (y(d.y0)+Math.round(strokeWidth/2)) + ',' + (x(getX(d,i))+Math.round(strokeWidth/2)) + ')' // Takes strokeWidth into consideration
             })
           .select('rect')
             .attr('width', function(d,i) {
-              return Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : width - strokeWidth
             })
-            .attr('height', x.rangeBand() );
+            .style('stroke-width', function(d,i) {
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : strokeWidth
+            })
+            .attr('height', x.rangeBand() - strokeWidth );
       else
         d3.transition(bars)
           //.delay(function(d,i) { return i * delay / data[0].values.length })
@@ -6384,6 +6401,12 @@ nv.models.multiBarHorizontal = function() {
     return chart;
   };
 
+  chart.strokeWidth = function(_) {
+    if (!arguments.length) return strokeWidth;
+    strokeWidth = _;
+    return chart;
+  };
+
   chart.xScale = function(_) {
     if (!arguments.length) return x;
     x = _;
@@ -6423,6 +6446,18 @@ nv.models.multiBarHorizontal = function() {
   chart.color = function(_) {
     if (!arguments.length) return color;
     color = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.barcolor = function(_) {
+    if (!arguments.length) return barcolor;
+    barcolor = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.baropacity = function(_) {
+    if (!arguments.length) return baropacity;
+    baropacity = nv.utils.getColor(_);
     return chart;
   };
 
@@ -7841,9 +7876,9 @@ nv.models.pie = function() {
                        }
                        return 'translate(' + labelsArc.centroid(d) + ') rotate(' + rotateAngle + ')';
                      } else {
-                   d.outerRadius = radius + 10; // Set Outer Coordinate
-                   d.innerRadius = radius + 15; // Set Inner Coordinate
-                   return 'translate(' + labelsArc.centroid(d) + ')'
+                       d.outerRadius = radius + 10; // Set Outer Coordinate
+                       d.innerRadius = radius + 15; // Set Inner Coordinate
+                       return 'translate(' + labelsArc.centroid(d) + ')'
                      }
                 });
 
@@ -7873,8 +7908,8 @@ nv.models.pie = function() {
                   }
                   return 'translate(' + labelsArc.centroid(d) + ') rotate(' + rotateAngle + ')';
                 } else {
-                d.outerRadius = radius + 10; // Set Outer Coordinate
-                d.innerRadius = radius + 15; // Set Inner Coordinate
+                  d.outerRadius = radius + 10; // Set Outer Coordinate
+                  d.innerRadius = radius + 15; // Set Inner Coordinate
                   return 'translate(' + labelsArc.centroid(d) + ')'
                 }
             });
@@ -7980,7 +8015,7 @@ nv.models.pie = function() {
     showLabels = _;
     return chart;
   };
-
+  
   chart.labelSunbeamLayout = function(_) {
     if (!arguments.length) return labelSunbeamLayout;
     labelSunbeamLayout = _;
