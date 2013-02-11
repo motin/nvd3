@@ -8,6 +8,7 @@ nv.models.multiBarHorizontal = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0}
     , width = 960
     , height = 500
+	, strokeWidth = 0 // Added strokeWidth param for multibar horizontal
     , id = Math.floor(Math.random() * 10000) //Create semi-unique ID in case user doesn't select one
     , x = d3.scale.ordinal()
     , y = d3.scale.linear()
@@ -225,13 +226,18 @@ nv.models.multiBarHorizontal = function() {
             //.delay(function(d,i) { return i * delay / data[0].values.length })
             .attr('transform', function(d,i) {
               //return 'translate(' + y(d.y0) + ',0)'
-              return 'translate(' + y(d.y0) + ',' + x(getX(d,i)) + ')'
+              return 'translate(' + (y(d.y0)+Math.round(strokeWidth/2)) + ',' + (x(getX(d,i))+Math.round(strokeWidth/2)) + ')' // Takes strokeWidth into consideration
             })
           .select('rect')
             .attr('width', function(d,i) {
-              return Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : width - strokeWidth
             })
-            .attr('height', x.rangeBand() );
+            .style('stroke-width', function(d,i) {
+			  var width = Math.abs(y(getY(d,i) + d.y0) - y(d.y0))
+              return width < strokeWidth ? width : strokeWidth
+            })
+            .attr('height', x.rangeBand() - strokeWidth );
       else
         d3.transition(bars)
           //.delay(function(d,i) { return i * delay / data[0].values.length })
@@ -298,6 +304,12 @@ nv.models.multiBarHorizontal = function() {
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    return chart;
+  };
+
+  chart.strokeWidth = function(_) {
+    if (!arguments.length) return strokeWidth;
+    strokeWidth = _;
     return chart;
   };
 
