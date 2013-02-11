@@ -15,6 +15,8 @@ nv.models.multiBarHorizontal = function() {
     , getY = function(d) { return d.y }
     , forceY = [0] // 0 is forced by default.. this makes sense for the majority of bar graphs... user can always do chart.forceY([]) to remove
     , color = nv.utils.defaultColor()
+    , barcolor = nv.utils.defaultColor() // Added override possibilities to bar color and bar opacity for multibar
+	, baropacity = 1 // Added override possibilities to bar color and bar opacity for multibar
     , stacked = false
     , showValues = false
     , valuePadding = 60
@@ -119,11 +121,12 @@ nv.models.multiBarHorizontal = function() {
       groups
           .attr('class', function(d,i) { return 'nv-group nv-series-' + i })
           .classed('hover', function(d) { return d.hover })
-          .style('fill', function(d,i){ return color(d, i) })
-          .style('stroke', function(d,i){ return color(d, i) });
-      d3.transition(groups)
-          .style('stroke-opacity', 1)
-          .style('fill-opacity', .75);
+		  // Fill and stroke are now determined on bar-level, not group-level
+		  //.style('fill', function(d,i){ return color(d, i) })
+		  //.style('stroke', function(d,i){ return color(d, i) })
+      //d3.transition(groups)
+          //.style('stroke-opacity', 1)
+          //.style('fill-opacity', .75);
 
 
       var bars = groups.selectAll('g.nv-bar')
@@ -140,6 +143,13 @@ nv.models.multiBarHorizontal = function() {
       barsEnter.append('rect')
           .attr('width', 0)
           .attr('height', x.rangeBand() / (stacked ? 1 : data.length) )
+
+      // Fill and stroke are now determined on bar-level, not group-level
+      var rects = bars.selectAll('rect')
+		  .style('fill', function(d,i,j){ return barcolor(d, i, j, 'fill') })
+          .style('stroke', function(d,i,j){ return barcolor(d, i, j, 'stroke') })
+          .style('fill-opacity', function(d,i,j){ return baropacity(d, i, j, 'fill') })
+          .style('stroke-opacity', function(d,i,j){ return baropacity(d, i, j, 'stroke') })
 
       bars
           .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
@@ -330,6 +340,18 @@ nv.models.multiBarHorizontal = function() {
   chart.color = function(_) {
     if (!arguments.length) return color;
     color = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.barcolor = function(_) {
+    if (!arguments.length) return barcolor;
+    barcolor = nv.utils.getColor(_);
+    return chart;
+  };
+
+  chart.baropacity = function(_) {
+    if (!arguments.length) return baropacity;
+    baropacity = nv.utils.getColor(_);
     return chart;
   };
 
