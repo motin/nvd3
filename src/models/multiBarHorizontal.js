@@ -77,7 +77,7 @@ nv.models.multiBarHorizontal = function() {
             });
 
       x   .domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
-          .rangeBands([0, availableHeight], .1);
+          .rangeBands([0, availableHeight], .0); // .0 = no percentually defined space between bars horizontally
 
       y   .domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) { return d.y + (stacked ? d.y0 : 0) }).concat(forceY)))
 
