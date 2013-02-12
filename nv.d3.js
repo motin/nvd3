@@ -3440,9 +3440,9 @@ nv.models.legend = function() {
   // Public Variables with Default Settings
   //------------------------------------------------------------
 
-  var margin = {top: 10+5, right: 0, bottom: 10+5, left: 0} // Custom margins in legend
+  var margin = {top: 5, right: 0, bottom: 5, left: 0}
     , width = 400
-    , height = 50+20 // Custom margins in legend
+    , height = 20
     , getKey = function(d) { return d.key }
     , color = nv.utils.defaultColor()
     , align = true
@@ -6631,7 +6631,7 @@ nv.models.multiBarHorizontalChart = function() {
       // Legend
 
       if (showLegend) {
-        legend.width(availableWidth / 2);
+        legend.width(availableWidth / 2 + availableWidth*0.25);
 
         g.select('.nv-legendWrap')
             .datum(data)
@@ -6644,7 +6644,7 @@ nv.models.multiBarHorizontalChart = function() {
         }
 
         g.select('.nv-legendWrap')
-            .attr('transform', 'translate(' + (availableWidth / 2) + ',' + (-margin.top) +')');
+            .attr('transform', 'translate(' + (availableWidth / 2 - availableWidth*0.25) + ',' + (-margin.top) +')');
       }
 
       //------------------------------------------------------------
